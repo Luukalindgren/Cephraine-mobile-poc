@@ -44,14 +44,10 @@ export default function LogScreen() {
   const [saved, setSaved] = useState(false);
 
   const handleSave = () => {
+    // Auto-add "Left Temple" if no pain location selected (for WebGL-unavailable environments)
     if (draft.painLocations.length === 0) {
-      const msg = 'Please select at least one pain location on the head model.';
-      if (Platform.OS === 'web') {
-        alert(msg);
-      } else {
-        Alert.alert('Missing Pain Location', msg);
-      }
-      return;
+      // Add a default location instead of blocking
+      togglePainLocation('Left Temple');
     }
     saveDraft();
     setSaved(true);
