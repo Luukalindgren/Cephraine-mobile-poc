@@ -182,6 +182,41 @@ export default function HeadModel3D({
   onToggleRegion,
   readonly = false,
 }: HeadModel3DProps) {
+  const [webglError, setWebglError] = React.useState(false);
+
+  // Check if WebGL is available
+  React.useEffect(() => {
+    if (typeof document !== 'undefined') {
+      const canvas = document.createElement('canvas');
+      const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+      if (!gl) {
+        setWebglError(true);
+      }
+    }
+  }, []);
+
+  if (webglError) {
+    return (
+      <View style={styles.container}>
+        <View style={[styles.canvas, { justifyContent: 'center', alignItems: 'center', backgroundColor: '#1a1a2e' }]}>
+          <RNText style={{ color: '#8892b0', fontSize: 14, textAlign: 'center', paddingHorizontal: 20 }}>
+            3D head model unavailable{'\n'}(WebGL not supported){'\n'}{'\n'}
+            Use the form below to log your headache
+          </RNText>
+        </View>
+        <View style={styles.legend}>
+          {selectedLocations.length === 0 ? (
+            <RNText style={styles.hint}>Select pain location using the form</RNText>
+          ) : (
+            <RNText style={styles.legendText}>
+              {selectedLocations.join(', ')}
+            </RNText>
+          )}
+        </View>
+      </View>
+    );
+  }
+
   return (
     <View style={styles.container}>
       <Canvas
