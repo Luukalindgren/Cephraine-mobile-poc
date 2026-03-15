@@ -40,13 +40,14 @@ export default function ExportScreen() {
       URL.revokeObjectURL(url);
     } else {
       try {
-        const FileSystem = await import('expo-file-system');
-        const Sharing = await import('expo-sharing');
-        const fileUri =
-          FileSystem.documentDirectory +
-          `cephraine-export-${new Date().toISOString().split('T')[0]}.csv`;
-        await FileSystem.writeAsStringAsync(fileUri, csv);
-        await Sharing.shareAsync(fileUri);
+        const FileSystem: any = await import('expo-file-system');
+        const Sharing: any = await import('expo-sharing');
+        const docDir = FileSystem.documentDirectory ?? FileSystem.default?.documentDirectory;
+        const fileUri = `${docDir}cephraine-export-${new Date().toISOString().split('T')[0]}.csv`;
+        const writeFn = FileSystem.writeAsStringAsync ?? FileSystem.default?.writeAsStringAsync;
+        await writeFn(fileUri, csv);
+        const shareFn = Sharing.shareAsync ?? Sharing.default?.shareAsync;
+        await shareFn(fileUri);
       } catch {
         alert('Export failed. Please try again.');
       }

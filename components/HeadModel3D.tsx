@@ -2,8 +2,8 @@ import React, { useRef, useMemo } from 'react';
 import { Canvas, useFrame, type ThreeEvent } from '@react-three/fiber';
 import { OrbitControls, Sphere } from '@react-three/drei';
 import * as THREE from 'three';
-import { View, StyleSheet, Text as RNText } from 'react-native';
-import { Colors, Severity } from '../constants/theme';
+import { View, StyleSheet, Text as RNText, Pressable } from 'react-native';
+import { Colors, Severity, Spacing, BorderRadius, FontSize } from '../constants/theme';
 import type { HeadRegion, PainLocation } from '../types';
 import { HEAD_REGION_LABELS } from '../types';
 
@@ -196,22 +196,47 @@ export default function HeadModel3D({
   }, []);
 
   if (webglError) {
+    const regions = Object.keys(HEAD_REGION_LABELS) as HeadRegion[];
     return (
-      <View style={styles.container}>
-        <View style={[styles.canvas, { justifyContent: 'center', alignItems: 'center', backgroundColor: '#1a1a2e' }]}>
-          <RNText style={{ color: '#8892b0', fontSize: 14, textAlign: 'center', paddingHorizontal: 20 }}>
-            3D head model unavailable{'\n'}(WebGL not supported){'\n'}{'\n'}
-            Use the form below to log your headache
-          </RNText>
-        </View>
-        <View style={styles.legend}>
-          {selectedLocations.length === 0 ? (
-            <RNText style={styles.hint}>Select pain location using the form</RNText>
-          ) : (
-            <RNText style={styles.legendText}>
-              {selectedLocations.join(', ')}
-            </RNText>
-          )}
+      <View style={styles.fallbackContainer}>
+        <RNText style={styles.fallbackTitle}>Select Pain Locations</RNText>
+        <RNText style={styles.fallbackSubtitle}>
+          Tap regions where you feel pain
+        </RNText>
+        <View style={styles.fallbackGrid}>
+          {regions.map((region) => {
+            const selected = selectedLocations.find((l) => l.region === region);
+            return (
+              <Pressable
+                key={region}
+                onPress={() => !readonly && onToggleRegion(region)}
+                style={[
+                  styles.fallbackChip,
+                  selected && {
+                    backgroundColor: Severity.getColor(selected.intensity) + '33',
+                    borderColor: Severity.getColor(selected.intensity),
+                  },
+                ]}
+              >
+                {selected && (
+                  <View
+                    style={[
+                      styles.dot,
+                      { backgroundColor: Severity.getColor(selected.intensity) },
+                    ]}
+                  />
+                )}
+                <RNText
+                  style={[
+                    styles.fallbackChipText,
+                    selected && { color: Colors.text },
+                  ]}
+                >
+                  {HEAD_REGION_LABELS[region]}
+                </RNText>
+              </Pressable>
+            );
+          })}
         </View>
       </View>
     );
@@ -308,5 +333,44 @@ const styles = StyleSheet.create({
   badgeText: {
     color: Colors.text,
     fontSize: 12,
+  },
+  fallbackContainer: {
+    width: '100%',
+    backgroundColor: Colors.surface,
+    borderRadius: BorderRadius.lg,
+    padding: Spacing.md,
+    gap: Spacing.md,
+  },
+  fallbackTitle: {
+    color: Colors.text,
+    fontSize: FontSize.md,
+    fontWeight: '600',
+    textAlign: 'center',
+  },
+  fallbackSubtitle: {
+    color: Colors.textSecondary,
+    fontSize: FontSize.sm,
+    textAlign: 'center',
+  },
+  fallbackGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: Spacing.sm,
+    justifyContent: 'center',
+  },
+  fallbackChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: BorderRadius.round,
+    backgroundColor: Colors.surfaceLight,
+    borderWidth: 1,
+    borderColor: Colors.border,
+  },
+  fallbackChipText: {
+    color: Colors.textSecondary,
+    fontSize: FontSize.sm,
   },
 });
